@@ -14,4 +14,11 @@ To push updates from this monorepo subtree to the remote:
 git subtree push --prefix=product/sandbox/ultrasound-sim ultrasound main
 ```
 
+To push updates from the remote to this monorepo subtree:
+
+```bash
+git subtree pull --prefix=product/sandbox/ultrasound-sim ultrasound main
+```
+
+
 
