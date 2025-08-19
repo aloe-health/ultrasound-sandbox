@@ -6,7 +6,7 @@ base = "typescript"
 command = "bun run build"
 
 # Directory with the static files to deploy
-publish = "typescript/apps/web/dist"
+publish = "apps/web/dist"
 
 [build.environment]
 # Use Node.js 18 or higher
