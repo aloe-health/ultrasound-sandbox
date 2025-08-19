@@ -1,0 +1,17 @@
+{
+  "name": "@aloe/adapters-node",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/storageNode.js",
+  "types": "dist/storageNode.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "bunx tsc --build tsconfig.json"
+  },
+  "dependencies": {
+    "@aloe/core": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.4.1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@aloe/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "beamform": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc --build tsconfig.json"
+  },
+  "dependencies": {
+    "@aloe/core": "0.1.0",
+    "@aloe/adapters-node": "0.1.0",
+    "commander": "^12.1.0"
+  }
+}

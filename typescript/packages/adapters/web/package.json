@@ -1,0 +1,14 @@
+{
+  "name": "@aloe/adapters-web",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/storageWeb.js",
+  "types": "dist/storageWeb.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "bunx tsc --build tsconfig.json"
+  },
+  "dependencies": {
+    "@aloe/core": "0.1.0"
+  }
+}

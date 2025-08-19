@@ -1,0 +1,22 @@
+{
+  "name": "aloe-sim",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "bun@1.2.20",
+  "workspaces": [
+    "packages/*",
+    "packages/*/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter @aloe/core build && bun run --filter @aloe/adapters-node build && bun run --filter @aloe/adapters-web build && bun run --filter @aloe/cli build && bun run --filter @aloe/web build",
+    "dev:web": "bun run --filter @aloe/web dev",
+    "preview:web": "bun run -w @aloe/web preview",
+    "start:cli": "bun apps/cli/dist/index.js",
+    "typecheck": "bunx tsc -b packages/core packages/adapters/node packages/adapters/web apps/cli"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.1.12",
+    "typescript": "^5.9.2"
+  }
+}
