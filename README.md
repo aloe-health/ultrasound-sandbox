@@ -1,5 +1,4 @@
 # ultrasound-sim sandbox
-
 This subtree is exported from the monorepo and published as `Aloe-Health/ultrasound-sandbox`.
 
 To add the remote locally:

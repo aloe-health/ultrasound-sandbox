@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
-  BeamformerConfig,
+  ProfileConfig,
   computePattern,
   computeWeights,
   computeProfile,
@@ -8,14 +8,13 @@ import {
   toCsv,
   parseCsvConfig,
   PatternPoint,
-  Profile,
+  ProfileSnapshot,
 } from "@aloe/core";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { WebStorage } from "@aloe/adapters-web";
 import { Slider } from "./ui/slider";
 import { VerticalSlider } from "./ui/vertical-slider";
 import { Button } from "./ui/button";
-import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
@@ -30,10 +29,10 @@ import {
 const storage = new WebStorage();
 
 type Props = {
-  config?: BeamformerConfig;
-  setConfig?: (cfg: BeamformerConfig) => void;
+  config?: ProfileConfig;
+  setConfig?: (cfg: ProfileConfig) => void;
   setPattern?: (pattern: PatternPoint[]) => void;
-  setProfile?: (profile: Profile) => void;
+  setProfile?: (profile: ProfileSnapshot) => void;
 };
 
 export default function BeamformProfileConfig({ config: externalConfig, setConfig, setPattern, setProfile }: Props) {
@@ -49,7 +48,7 @@ export default function BeamformProfileConfig({ config: externalConfig, setConfi
   const [chebDb, setChebDb] = useState<number>(externalConfig && (externalConfig as any).chebyshevSidelobeDb ? (externalConfig as any).chebyshevSidelobeDb : 30);
   const [focusDepth, setFocusDepth] = useState<number | undefined>(externalConfig?.focusDepth);
 
-  const baseCfg: Omit<BeamformerConfig, "weightsOverride" | "windowType"> = {
+  const baseCfg: Omit<ProfileConfig, "weightsOverride" | "windowType"> = {
     elements,
     spacing,
     spacingUnit,
@@ -61,14 +60,14 @@ export default function BeamformProfileConfig({ config: externalConfig, setConfi
   } as any;
 
   const [weights, setWeights] = useState<number[]>(() => {
-    const tmp = { ...(baseCfg as any), windowType } as BeamformerConfig;
+    const tmp = { ...(baseCfg as any), windowType } as ProfileConfig;
     return computeWeights(tmp);
   });
 
   const prevNonCustomWeightsRef = React.useRef<number[] | null>(null);
 
   React.useEffect(() => {
-    const tmp = { ...(baseCfg as any), windowType } as BeamformerConfig;
+    const tmp = { ...(baseCfg as any), windowType } as ProfileConfig;
     const w = computeWeights(tmp);
     if (windowType === "custom") {
       // Use the last non-custom weights for continuity if available,
@@ -86,10 +85,10 @@ export default function BeamformProfileConfig({ config: externalConfig, setConfi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elements, spacing, spacingUnit, frequencyHz, waveSpeed, windowType, chebDb]);
 
-  const cfgWithOverride: BeamformerConfig = useMemo(() => {
-    const partial = { ...(baseCfg as any), windowType } as BeamformerConfig;
+  const cfgWithOverride: ProfileConfig = useMemo(() => {
+    const partial = { ...(baseCfg as any), windowType } as ProfileConfig;
     if (windowType === "custom") {
-      return { ...(partial as any), customWeights: weights } as BeamformerConfig;
+      return { ...(partial as any), customWeights: weights } as ProfileConfig;
     }
     return partial;
   }, [baseCfg, windowType, weights]);
@@ -105,7 +104,7 @@ export default function BeamformProfileConfig({ config: externalConfig, setConfi
   }, [cfgWithOverride, pattern, profile]);
 
   const exportCsv = async () => {
-    const csv = toCsv({ config: cfgWithOverride, profile, pattern });
+    const csv = toCsv({ config: cfgWithOverride, snapshot: profile, pattern });
     const fileName = `beamformer_${elements}el_${windowType}.csv`;
     await storage.saveText(fileName, csv);
   };
@@ -157,12 +156,7 @@ export default function BeamformProfileConfig({ config: externalConfig, setConfi
           <div>
             <Label>Spacing ({spacingUnit})</Label>
             <div className="flex gap-2 items-center">
-              <Input type="text" value={String(spacing)} onChange={e => {
-                const raw = e.target.value.trim();
-                const parsed = Number(raw);
-                if (!Number.isFinite(parsed)) return setSpacing(spacing);
-                setSpacing(parsed);
-              }} />
+              <Input type="number" value={String(spacing)} onChange={e => { setSpacing(Number(e.target.value)) }} />
               <Select value={spacingUnit} onValueChange={(v) => setSpacingUnit(v as any)}>
                 <SelectTrigger style={{ minWidth: 140 }}>
                   <SelectValue />
@@ -234,7 +228,7 @@ export default function BeamformProfileConfig({ config: externalConfig, setConfi
               <BarChart data={weights.map((w, i) => ({ idx: i + 1, w }))} margin={{ top: 8, right: 12, left: 12, bottom: 8 }}>
                 <XAxis dataKey="idx" tick={{ fontSize: 11 }} />
                 <YAxis hide />
-                <Tooltip formatter={(v: any) => Number(v).toFixed(4)} />
+                <Tooltip formatter={(v: any) => Number(v).toFixed(4)} labelFormatter={(label) => `Element ${label}`} />
                 <Bar dataKey="w" fill="#06b6d4" />
               </BarChart>
             </ResponsiveContainer>

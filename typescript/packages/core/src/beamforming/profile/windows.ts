@@ -1,43 +1,28 @@
 /* Author: Nathaniel <nathaniel@aloe-health.tech>
  * Created: 2025-08-18
- * Purpose: Provides functions for generating various windowing functions used in beamforming.
+ * Purpose: Provides functions for generating various windowing functions used in beamforming (moved).
  */
 
 import { WindowType } from "./types.js";
 
-/** Rectangular window: all ones. */
 export function rectangularWindow(N: number): number[] {
   return Array.from({ length: N }, () => 1);
 }
 
-/** Hamming window: all ones. */
 export function hammingWindow(N: number): number[] {
   if (N <= 1) return [1];
   const a0 = 0.54;
-  const a1 = 1 - a0; // 0.46
+  const a1 = 1 - a0;
   const M = N - 1;
   return Array.from({ length: N }, (_, n) => a0 - a1 * Math.cos((2 * Math.PI * n) / M));
 }
 
-/** Triangular window (Bartlett). */
 export function triangularWindow(N: number): number[] {
   if (N <= 1) return [1];
   const M = N - 1;
   return Array.from({ length: N }, (_, n) => 1 - Math.abs((n - M / 2) / (M / 2)));
 }
 
-/**
- * Chebyshev (Dolph-Chebyshev) window, side-lobe level specified in dB.
- * Implementation via DFT of Chebyshev polynomial samples (works well for moderate N).
- * Based on the classic construction used by scipy.signal.chebwin (conceptually),
- * but implemented here (O(N^2)) to avoid dependencies.
- */
-/**
- * Dolph–Chebyshev window.
- * @param N Length
- * @param sidelobeDb Desired sidelobe level in dB (e.g. 30–100)
- * @param centered If true, return linear-phase window (peak in the middle). If false, zero-phase (peak at n=0).
- */
 export function chebyshevWindow(N: number, sidelobeDb: number = 30): number[] {
   if (N <= 1) return [1];
 
@@ -62,13 +47,11 @@ export function chebyshevWindow(N: number, sidelobeDb: number = 30): number[] {
 
   const TMbeta = Math.cosh(M * acosh(beta));
 
-  // Build spectrum
   const Y = new Array<number>(N);
   for (let k = 0; k < N; k++) {
     Y[k] = Tm(beta * Math.cos(Math.PI * k / N)) / TMbeta;
   }
 
-  // Real IFFT (cosine series)
   const w = new Array<number>(N).fill(0);
   const half = Math.floor(N / 2);
   for (let n = 0; n < N; n++) {
@@ -82,24 +65,20 @@ export function chebyshevWindow(N: number, sidelobeDb: number = 30): number[] {
     w[n] = s / N;
   }
 
-  // Normalize to 1
   const maxVal = Math.max(...w.map(v => Math.abs(v)));
   const inv = maxVal > 0 ? 1 / maxVal : 1;
   for (let i = 0; i < N; i++) w[i] *= inv;
 
-  // Clamp negatives to zero
   for (let i = 0; i < N; i++) {
     if (w[i] < 0) w[i] = 0;
   }
 
-  // Circular shift to center
   const shift = Math.floor(N / 2);
   const wc = new Array<number>(N);
   for (let i = 0; i < N; i++) {
     wc[i] = w[(i + shift) % N];
   }
 
-  // Enforce symmetry (mirror values)
   for (let i = 0; i < Math.floor(N / 2); i++) {
     const j = N - 1 - i;
     const avg = 0.5 * (wc[i] + wc[j]);

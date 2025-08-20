@@ -3,13 +3,13 @@
  * Purpose: Core beamforming calculations for phased arrays.
  */
 
-import { BeamformerConfig, PatternPoint, PerElementDelays, Profile } from "./types.js";
+import { ProfileConfig, PatternPoint, PerElementDelays, ProfileSnapshot } from "./types.js";
 import { makeWindow } from "./windows.js";
 
 /**
  * Compute element spacing in meters.
  */
-export function spacingMeters(cfg: BeamformerConfig): number {
+export function spacingMeters(cfg: ProfileConfig): number {
   const lambda = cfg.waveSpeed / cfg.frequencyHz; // wavelength
   return cfg.spacingUnit === "wavelength" ? cfg.spacing * lambda : cfg.spacing;
 }
@@ -18,7 +18,7 @@ export function spacingMeters(cfg: BeamformerConfig): number {
  * Compute weights array, applying preset window unless weightsOverride is provided.
  * Weights are normalized to unit max.
  */
-export function computeWeights(cfg: BeamformerConfig): number[] {
+export function computeWeights(cfg: ProfileConfig): number[] {
   const N = cfg.elements;
   let w: number[];
   if (cfg.windowType === "custom") {
@@ -44,7 +44,7 @@ export function computeWeights(cfg: BeamformerConfig): number[] {
  * x_i = (i - (N-1)/2) * d
  * Steering to theta0 requires time delay τ_i = x_i * sin(theta0) / c
  */
-export function computeDelays(cfg: BeamformerConfig): PerElementDelays {
+export function computeDelays(cfg: ProfileConfig): PerElementDelays {
   const N = cfg.elements;
   const d = spacingMeters(cfg);
   const c = cfg.waveSpeed;
@@ -93,7 +93,7 @@ export function computeDelays(cfg: BeamformerConfig): PerElementDelays {
 /**
  * Convenience: compute a Profile (weights + delays) for a config
  */
-export function computeProfile(cfg: BeamformerConfig): Profile {
+export function computeProfile(cfg: ProfileConfig): ProfileSnapshot {
   const weights = computeWeights(cfg);
   const delays = computeDelays(cfg);
   return { weights, delays };
@@ -105,7 +105,7 @@ export function computeProfile(cfg: BeamformerConfig): Profile {
  * Intensity = |AF|^2 normalized to peak 1
  */
 export function computePattern(
-  cfg: BeamformerConfig,
+  cfg: ProfileConfig,
   anglesDeg: number[] = defaultAngles(),
   normalized = true
 ): PatternPoint[] {

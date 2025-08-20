@@ -10,35 +10,20 @@ export type WindowType = "rectangular" | "hamming" | "triangular" | "chebyshev" 
  * Beamformer configuration. For `windowType === "custom"` a `weightsOverride` MUST be provided.
  * For other window types `weightsOverride` should not be present.
  */
-export type BeamformerConfig =
-  | {
+export type ProfileConfig = {
       elements: number;
       spacing: number;
       spacingUnit: SpacingUnit;
       frequencyHz: number;
       waveSpeed: number;
       steerAngleDeg: number;
-      windowType: Exclude<WindowType, "custom">;
+      windowType: WindowType;
       chebyshevSidelobeDb?: number;
-      /** customWeights is not allowed for non-custom window types */
-      customWeights?: undefined;
       /** Optional focus depth (m) for future use */
       focusDepth?: number;
-    }
-  | {
-      elements: number;
-      spacing: number;
-      spacingUnit: SpacingUnit;
-      frequencyHz: number;
-      waveSpeed: number;
-      steerAngleDeg: number;
-      windowType: "custom";
-      chebyshevSidelobeDb?: number;
       /** For custom windows the explicit per-element weights are required. */
-      customWeights: number[];
-      /** Optional focus depth (m) for future use */
-      focusDepth?: number;
-    };
+      customWeights?: number[];
+    }
 
 export interface PerElementDelays {
   /** time delay in seconds for each element */
@@ -54,15 +39,15 @@ export interface PatternPoint {
   intensityDb: number;     // 10*log10(intensityLin), -Inf at 0 (we clamp)
 }
 
-export interface BeamResult {
-  config: BeamformerConfig;
+export interface BeamformFullProfile {
+  config: ProfileConfig;
   /** Profile contains the per-element apodization and delays */
-  profile: Profile;
+  snapshot: ProfileSnapshot;
   pattern: PatternPoint[]; // across angles
 }
 
 /** Compact per-element profile exported/consumed by UI and CSV routines. */
-export interface Profile {
+export interface ProfileSnapshot {
   weights: number[]; // length = elements
   delays: PerElementDelays;
 }

@@ -5,7 +5,7 @@
  */
 import { Command } from "commander";
 import {
-  BeamformerConfig,
+  ProfileConfig,
   computePattern,
   computeProfile,
   defaultAngles,
@@ -35,7 +35,7 @@ program.command("compute")
   .option("-o, --out <file>", "output CSV file", "beamformer.csv")
   .option("--from-csv <file>", "load a previously saved CSV to reuse its config/weights")
   .action(async (opts) => {
-    let cfg: BeamformerConfig = {
+    let cfg: ProfileConfig = {
       elements: opts.elements,
       spacing: opts.spacing,
       spacingUnit: opts.spacingUnit,
@@ -68,7 +68,7 @@ program.command("compute")
     const profile = computeProfile(cfg as any);
     const pattern = computePattern(cfg as any, sweep);
 
-    const csv = toCsv({ config: cfg as any, profile, pattern });
+    const csv = toCsv({ config: cfg as any, snapshot: profile, pattern });
     const st = new NodeStorage();
     await st.saveText(opts.out, csv);
     console.log(`Wrote ${opts.out}`);

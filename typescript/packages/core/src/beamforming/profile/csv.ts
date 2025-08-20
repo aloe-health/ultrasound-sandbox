@@ -4,11 +4,11 @@
  * Purpose: CSV import/export for beamformer configurations and results.
  */
 
-import { BeamResult, BeamformerConfig, Profile } from "../types.js";
+import { BeamformFullProfile, ProfileConfig, ProfileSnapshot, SpacingUnit, WindowType } from "./types.js";
 
 /** Serialize a config & per-element data into a CSV string. */
-export function toCsv(result: BeamResult): string {
-  const { config, profile } = result;
+export function toCsv(result: BeamformFullProfile): string {
+  const { config, snapshot: profile } = result;
   const { weights, delays } = profile;
   const header = [
     "# BeamformerConfig",
@@ -19,6 +19,7 @@ export function toCsv(result: BeamResult): string {
     `waveSpeed,${config.waveSpeed}`,
     `steerAngleDeg,${config.steerAngleDeg}`,
     `windowType,${config.windowType}`,
+    `focusDepth,${config.focusDepth ?? ""}`,
     `chebyshevSidelobeDb,${config.chebyshevSidelobeDb ?? ""}`,
     `customWeights,${(config as any).customWeights ? "present" : ""}`,
     "",
@@ -35,7 +36,7 @@ export function toCsv(result: BeamResult): string {
 }
 
 /** Parse a CSV produced by toCsv back into a BeamformerConfig and optional weights. */
-export function parseCsvConfig(csv: string): { config: BeamformerConfig; weights: number[] } {
+export function parseCsvConfig(csv: string): { config: ProfileConfig; weights: number[] } {
   const lines = csv.split(/\r?\n/);
   const map = new Map<string, string>();
   let dataStart = -1;
@@ -56,11 +57,13 @@ export function parseCsvConfig(csv: string): { config: BeamformerConfig; weights
 
   const elements = Number(map.get("elements") ?? 0);
   const spacing = Number(map.get("spacing") ?? 0);
-  const spacingUnit = (map.get("spacingUnit") ?? "wavelength") as any;
+  const spacingUnit = (map.get("spacingUnit") ?? "wavelength") as SpacingUnit;
   const frequencyHz = Number(map.get("frequencyHz") ?? 1);
   const waveSpeed = Number(map.get("waveSpeed") ?? 1540);
   const steerAngleDeg = Number(map.get("steerAngleDeg") ?? 0);
-  const windowType = (map.get("windowType") ?? "rectangular") as any;
+  const windowType = (map.get("windowType") ?? "rectangular") as WindowType;
+  const focusDepthStr = map.get("focusDepth");
+  const focusDepth = focusDepthStr ? Number(focusDepthStr) : undefined;
   const chebyshevSidelobeDbStr = map.get("chebyshevSidelobeDb");
   const chebyshevSidelobeDb = chebyshevSidelobeDbStr ? Number(chebyshevSidelobeDbStr) : undefined;
 
@@ -73,7 +76,7 @@ export function parseCsvConfig(csv: string): { config: BeamformerConfig; weights
     weights.push(Number(wStr));
   }
 
-  const config: BeamformerConfig = {
+  const config: ProfileConfig = {
     elements,
     spacing,
     spacingUnit,
@@ -82,6 +85,7 @@ export function parseCsvConfig(csv: string): { config: BeamformerConfig; weights
     steerAngleDeg,
     windowType,
     chebyshevSidelobeDb,
+    focusDepth,
     customWeights: weights.length === elements ? weights : undefined
   };
 

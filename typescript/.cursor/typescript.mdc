@@ -3,3 +3,43 @@ alwaysApply: true
 ---
 
 # Typescript Ultrasound Simulation Tools
+
+This is a ultrasound simulation and tooling typespcript project with a react web interface and bun cli.
+
+## Instructions
+
+Name all files in the `kebab-case` format, but keep all typescript code in the standard format.
+
+Add the following comment to the top of every file you create
+
+```ts
+/*
+ * Author: [leave blank]
+ * Created: [today's date, yyyy-mm-dd]
+ * Purpose: [file description]
+ */
+```
+
+Export file from subfolders via `index.ts` files, avoid excess exports, and import files from the most sensical place (if sibling file, import directly, if nested file, import from the `index.ts` folder)
+
+Type everything. Avoid use of `any`, if it's necessary to cast (e.g. `as ___`) still use a type.
+
+## Layout
+
+The project is broken up into many modules. 
+
+### `apps/cli/`: the bun cli
+ - the cli will be used for testing the core functionality as well as integrating tools into other workflows (bash, rust, make, etc.)
+### `apps/web/`: The web interface
+ - use shadcn for all applicable components
+ - when styling, use tailwind, but try to be modular, e.g. build reusable components into `src/components/ui`
+ - keep all computational logic out of the web. data manipulation is fine, as long as it is for display
+### `packages/core`: the core ultrasound simulation, math, tools, and logic
+ - build the real stuff here, port to the cli and web interface
+ - anything that could be used in both the cli and web goes here
+### `packages/adapters`: code for adapting functionality between versions
+ - e.g. storage
+
+## Running
+
+You can run `bun run build` in the `typescript/` root to build all modules, or `bun run typecheck` to do a quick typecheck.
