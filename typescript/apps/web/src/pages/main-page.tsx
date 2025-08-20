@@ -21,7 +21,10 @@ export default function MainPage() {
             <h2 className="text-lg font-medium">Pages</h2>
             <ul className="mt-2 space-y-2">
               <li>
-                <Link className="text-indigo-600" to="/beamformer">Beamformer profile</Link>
+                <Link className="text-indigo-600" to="/beamforming-profile">Beamforming profile</Link>
+              </li>
+              <li>
+                <Link className="text-indigo-600" to="/dynamic-beamforming">Dynamic beamforming</Link>
               </li>
             </ul>
           </div>

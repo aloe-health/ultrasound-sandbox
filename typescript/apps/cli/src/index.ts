@@ -10,6 +10,15 @@ import {
   computeProfile,
   defaultAngles,
   toCsv,
+  // dynamic
+  DynamicBeamformingConfig,
+  createSumBeamformer,
+  createPointSourceGenerator,
+  runFrame,
+  createDelayAndSumBeamformer,
+  createDelayAndSumApodizedBeamformer,
+  // signal
+  envelope,
 } from "@aloe/core";
 import { NodeStorage } from "@aloe/adapters-node";
 import { parseCsvConfig } from "@aloe/core";
@@ -18,10 +27,13 @@ const program = new Command();
 
 program
   .name("beamform")
-  .description("Phased array beamformer utilities")
+  .description("Beamforming utilities (profiles and dynamic)")
   .version("0.1.0");
 
-program.command("compute")
+// profiles subcommand group
+const profiles = program.command("profiles").description("Static profile utilities");
+
+profiles.command("compute")
   .description("Compute weights, delays, and pattern; export CSV")
   .option("-n, --elements <int>", "number of elements", (v)=>parseInt(v,10), 64)
   .option("-s, --spacing <number>", "spacing value (meters or wavelengths)", parseFloat, 0.5)
@@ -72,6 +84,71 @@ program.command("compute")
     const st = new NodeStorage();
     await st.saveText(opts.out, csv);
     console.log(`Wrote ${opts.out}`);
+  });
+
+// dynamic subcommand group
+const dynamic = program.command("dynamic").description("Dynamic beamforming simulation");
+
+dynamic.command("simulate")
+  .description("Simulate one frame with point-source generator and selected beamformer")
+  .option("--scan-type <t>", "linear|phased", "phased")
+  .option("--scan-lines <int>", "number of scan lines", (v)=>parseInt(v,10), 40)
+  .option("--range <min,max>", "range (deg for phased, meters for linear)", "-10,10")
+  .option("--samples <int>", "samples per scan line", (v)=>parseInt(v,10), 1024)
+  .option("--elements <int>", "array elements", (v)=>parseInt(v,10), 64)
+  .option("--spacing <m>", "element spacing (m)", parseFloat, 0.0005)
+  .option("--dt <s>", "time step (s)", parseFloat, 1e-7)
+  .option("--c <mps>", "propagation speed (m/s)", parseFloat, 1540)
+  .option("--freq <hz>", "source frequency (Hz)", parseFloat, 5_000_000)
+  .option("--offset <val>", "offset within range (deg for phased, m for linear)", parseFloat, 0)
+  .option("--speed <mps>", "point-source radial speed (m/s)", parseFloat, 1540)
+  .option("--bf <type>", "beamformer: sum|delay|delay-apod (default: delay)", "delay")
+  .option("--window <type>", "apodization window (rectangular|hamming|triangular|chebyshev)", "hamming")
+  .option("--cheb-sll <db>", "chebyshev sidelobe dB (used if window=chebyshev)", parseFloat, 30)
+  .option("--envelope", "apply Hilbert envelope to each scanline")
+  .action(async (opts) => {
+    const [rmin, rmax] = String(opts.range).split(",").map(Number);
+    const cfg: DynamicBeamformingConfig = {
+      /** seconds */
+      timeStep: opts.dt,
+      /** meters per second */
+      propagationSpeed: opts.c,
+      scanning: {
+        numScanLines: opts.scanLines,
+        type: opts.scanType,
+        range: [rmin, rmax],
+        samples: opts.samples,
+      },
+      array: {
+        elements: opts.elements,
+        /** meters */
+        elementSpacing: opts.spacing,
+      },
+    };
+
+    const gen = createPointSourceGenerator({ offset: opts.offset, /** m/s */ speed: opts.speed, frequencyHz: opts.freq });
+
+    let bf;
+    switch (opts.bf) {
+      case "sum":
+        bf = createSumBeamformer();
+        break;
+      case "delay-apod":
+        bf = createDelayAndSumApodizedBeamformer({ windowType: opts.window, chebyshevSidelobeDb: opts.chebSll });
+        break;
+      case "delay":
+      default:
+        bf = createDelayAndSumBeamformer();
+    }
+
+    const res = runFrame(cfg, gen, bf);
+    const out = opts.envelope ? res.beamformed.map(envelope) : res.beamformed;
+    console.log("Simulated frame:");
+    console.log({
+      scanParams: res.scanParams.slice(0, 5),
+      firstScanlinePreview: out[0]?.slice(0, 16),
+      dims: { scanlines: out.length, samples: out[0]?.length }
+    });
   });
 
 program.parse();

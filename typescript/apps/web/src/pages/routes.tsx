@@ -7,6 +7,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainPage from "./main-page";
 import BeamformProfilePage from "./beamform-profile-page";
+import DynamicBeamformerPage from "./dynamic-beamformer-page";
 import Shell from "../components/ui/shell";
 
 export default function AppRoutes() {
@@ -15,7 +16,8 @@ export default function AppRoutes() {
       <Routes>
         <Route path="/" element={<Shell />}>
           <Route path="/" index element={<MainPage />} />
-          <Route path="beamformer" element={<BeamformProfilePage />} />
+          <Route path="beamforming-profile" element={<BeamformProfilePage />} />
+          <Route path="dynamic-beamforming" element={<DynamicBeamformerPage />} />
           <Route path="*" element={<MainPage />} />
         </Route>
       </Routes>
