@@ -14,8 +14,8 @@ const Row = (props: { children: ReactNode; className?: string }) => (
 );
 
 export default function DynamicBeamformerPage() {
-  const [scanLines, setScanLines] = useState(40);
-  const [samples, setSamples] = useState(256);
+  const [scanLines, setScanLines] = useState(64);
+  const [samples, setSamples] = useState(512);
   const [elements, setElements] = useState(32);
   // element spacing: user controls a value and a unit (mm or wavelengths)
   const [spacingValue, setSpacingValue] = useState(0.25); // default 0.25 wavelengths
@@ -26,13 +26,13 @@ export default function DynamicBeamformerPage() {
   const [offset, setOffset] = useState(0);
   const [speed, setSpeed] = useState(1540);
   // frequency in MHz for input
-  const [freqMhz, setFreqMhz] = useState(5);
+  const [freqMhz, setFreqMhz] = useState(4);
   const [mode, setMode] = useState<"raw"|"envelope">("envelope");
-  const [bfType, setBfType] = useState<"sum"|"delay"|"delay-apod">("delay");
-  const [windowType, setWindowType] = useState<"rectangular"|"hamming"|"triangular"|"chebyshev">("hamming");
+  const [bfType, setBfType] = useState<"sum"|"delay"|"delay-apod">("delay-apod");
+  const [windowType, setWindowType] = useState<"rectangular"|"hamming"|"triangular"|"chebyshev">("chebyshev");
   const [chebSll, setChebSll] = useState(30);
   const [autoRun, setAutoRun] = useState(false);
-  const [rangePos, setRangePos] = useState(10);
+  const [rangePos, setRangePos] = useState(25);
 
   const [frame, setFrame] = useState<number[][]>([]);
 

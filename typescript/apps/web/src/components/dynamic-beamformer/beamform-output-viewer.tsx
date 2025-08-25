@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "../ui/button";
 import { DynamicBeamformingConfig } from "@aloe/core";
+import { canvasToCompressedPNG } from "../../utils/png-compress";
 
 export default function BeamformOutputViewer(props: {
   frame: number[][];
@@ -18,9 +19,19 @@ export default function BeamformOutputViewer(props: {
   const download = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const url = canvas.toDataURL("image/png");
-    const a = document.createElement("a");
-    a.href = url; a.download = "dynamic-frame.png"; a.click();
+    // create compressed PNG bytes without changing canvas resolution
+    canvasToCompressedPNG(canvas).then((bytes) => {
+      const blob = new Blob([bytes], { type: 'image/png' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'dynamic-frame.png'; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }).catch((e) => {
+      // fallback to native PNG if compression fails
+      const url = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = url; a.download = "dynamic-frame.png"; a.click();
+    });
   };
 
   const drawHeatmap = (frame: number[][]) => {
