@@ -5,7 +5,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from ".
 import { Slider } from "../ui/slider";
 
 const Row = (props: { children: React.ReactNode; className?: string }) => (
-  <div className={"flex items-center gap-2 " + (props.className || "")}>{props.children}</div>
+  <div className={("flex flex-wrap items-center gap-2 w-full ") + (props.className || "")}>{props.children}</div>
 );
 
 export default function DynamicBeamformConfig(props: {
@@ -20,15 +20,24 @@ export default function DynamicBeamformConfig(props: {
 }){
   const { scanLines, setScanLines, samples, setSamples, elements, setElements, spacingValue, setSpacingValue, spacingUnit, setSpacingUnit, dtUs, setDtUs, c, setC, rangePos, setRangePos } = props;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <Row><Label htmlFor="scanlines">Scan lines</Label><Input id="scanlines" type="number" value={scanLines} onChange={e=>setScanLines(parseInt(e.target.value,10)||0)} className="w-28"/></Row>
-      <Row><Label htmlFor="samples">Samples</Label><Input id="samples" type="number" value={samples} onChange={e=>setSamples(parseInt(e.target.value,10)||0)} className="w-28"/></Row>
-      <Row><Label htmlFor="elements">Elements</Label><Input id="elements" type="number" value={elements} onChange={e=>setElements(parseInt(e.target.value,10)||0)} className="w-28"/></Row>
-      <Row className="col-span-1 md:col-span-2">
-        <Label htmlFor="spacing">Element spacing</Label>
-        <Input id="spacing" type="number" step="0.01" value={spacingValue} onChange={e=>setSpacingValue(parseFloat(e.target.value)||0)} className="w-36"/>
+    <div className="grid gap-4 mb-6 grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
+      <Row>
+        <Label htmlFor="scanlines" className="whitespace-nowrap shrink-0">Scan lines</Label>
+        <Input id="scanlines" type="number" value={scanLines} onChange={e=>setScanLines(parseInt(e.target.value,10)||0)} className="w-full"/>
+      </Row>
+      <Row>
+        <Label htmlFor="samples" className="whitespace-nowrap shrink-0">Samples</Label>
+        <Input id="samples" type="number" value={samples} onChange={e=>setSamples(parseInt(e.target.value,10)||0)} className="w-full"/>
+      </Row>
+      <Row>
+        <Label htmlFor="elements" className="whitespace-nowrap shrink-0">Elements</Label>
+        <Input id="elements" type="number" value={elements} onChange={e=>setElements(parseInt(e.target.value,10)||0)} className="w-full"/>
+      </Row>
+      <Row className="col-span-full">
+        <Label htmlFor="spacing" className="whitespace-nowrap shrink-0">Element spacing</Label>
+        <Input id="spacing" type="number" step="0.01" value={spacingValue} onChange={e=>setSpacingValue(parseFloat(e.target.value)||0)} className="min-w-[6rem] flex-1"/>
         <Select value={spacingUnit} onValueChange={(v: any)=>setSpacingUnit(v)}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="min-w-[8rem] flex-1">
             <SelectValue placeholder={spacingUnit} />
           </SelectTrigger>
           <SelectContent>
@@ -38,13 +47,16 @@ export default function DynamicBeamformConfig(props: {
         </Select>
       </Row>
       <Row>
-        <Label htmlFor="dt">dt (µs)</Label>
-        <Input id="dt" type="number" step="0.01" value={dtUs} onChange={e=>setDtUs(parseFloat(e.target.value)||0)} className="w-36"/>
+        <Label htmlFor="dt" className="whitespace-nowrap shrink-0">dt (µs)</Label>
+        <Input id="dt" type="number" step="0.01" value={dtUs} onChange={e=>setDtUs(parseFloat(e.target.value)||0)} className="w-full"/>
       </Row>
-      <Row><Label htmlFor="c">c (m/s)</Label><Input id="c" type="number" value={c} onChange={e=>setC(parseFloat(e.target.value)||0)} className="w-36"/></Row>
       <Row>
-        <Label htmlFor="range">Range (deg)</Label>
-        <div className="w-48">
+        <Label htmlFor="c" className="whitespace-nowrap shrink-0">c (m/s)</Label>
+        <Input id="c" type="number" value={c} onChange={e=>setC(parseFloat(e.target.value)||0)} className="w-full"/>
+      </Row>
+      <Row>
+        <Label htmlFor="range" className="whitespace-nowrap shrink-0">Range (deg)</Label>
+        <div className="flex-1 min-w-[8rem]">
           <Slider value={[rangePos]} min={1} max={90} onValueChange={(v:any)=>setRangePos(v[0]||1)} />
         </div>
         <div className="text-sm text-muted-foreground">±{rangePos}°</div>

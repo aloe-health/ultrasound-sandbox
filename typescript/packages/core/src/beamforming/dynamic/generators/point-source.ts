@@ -55,12 +55,18 @@ export function createPointSourceGenerator(config: PointSourceGeneratorConfig): 
         const z = z0 + config.speed * t;
         const xCenter = isPhased ? z * Math.tan(thetaRad) : xOffset;
 
+        // Transmit path assumed from array center to point (common across elements)
+        const rTx = Math.sqrt(xCenter * xCenter + z * z);
+        const tauTx = rTx / c; // seconds
+
+        const omega = 2 * Math.PI * config.frequencyHz; // radians per second
+
         for (let e = 0; e < elements; e++) {
           const xElem = elementPositionMeters(e, cfg.array);
-          const r = Math.sqrt((xElem - xCenter) * (xElem - xCenter) + z * z);
-          const tau = r / c; // time of flight (one-way)
-          const omega = 2 * Math.PI * config.frequencyHz; // radians per second
-          const phase = omega * (t - 2 * tau) + phase0; // round-trip
+          const rRx = Math.sqrt((xElem - xCenter) * (xElem - xCenter) + z * z);
+          const tauRx = rRx / c; // seconds (receive)
+          // Round-trip time = transmit (common) + receive (per element)
+          const phase = omega * (t - (tauTx + tauRx)) + phase0;
           matrix[s][e] = amplitude * Math.cos(phase);
         }
       }
